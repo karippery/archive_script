@@ -1,0 +1,10 @@
+Package: archive-group-files
+Version: 1.0
+Section: utils
+Priority: optional
+Architecture: all
+Depends: python3
+Maintainer: John Karippery
+Description: Script to archive files from users of a Linux group.
+ This tool moves all user files from group members into a central archive
+ folder and logs the process.

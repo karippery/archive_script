@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Installer logs
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+venv/
+env/
+
+# Package build artifacts
+*.deb
+*.tar.gz
+*.egg-info/
+dist/
+build/
+
+# Editors
+.vscode/
+.idea/
+
+# Backup files
+*~
+*.bak
+*.swp
+*.swo
+
+# Converted line endings
+*.orig
+
+# Archive output
+/var/archive_group_files/
