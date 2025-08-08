@@ -71,14 +71,27 @@ def prepare_archive_dir(logger):
 def get_group_members(group_name: str, logger):
     """
     Returns the usernames in the given group.
+    Includes both users explicitly in the group's member list (secondary group)
+    and users whose primary group matches the group's GID.
     """
     try:
-        return grp.getgrnam(group_name).gr_mem
+        group_info = grp.getgrnam(group_name)
+        members = set(group_info.gr_mem)
+        gid = group_info.gr_gid
+
+        for user in pwd.getpwall():
+            if user.pw_gid == gid:
+                members.add(user.pw_name)
+
+        return sorted(members)
     except KeyError:
         logger.error(f"Group '{group_name}' does not exist.")
         sys.exit(1)
     except PermissionError:
         logger.error("Permission denied when accessing group info.")
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"Unexpected error while fetching group members: {e}")
         sys.exit(1)
 
 
