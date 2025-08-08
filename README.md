@@ -107,6 +107,15 @@ Example log entry:
 If there is a chance that the script might be executed concurrently (for example, by cron or in a distributed system), you should add a simple file lock to avoid race conditions.
 This can be done with fcntl
 
+## Testing
+All tests mock grp, pwd, and fcntl, so they run without root and without touching the filesystem.
+
+# inside the project directory
+
+```bash
+python3 -m unittest test_archive_group_files.py -v
+```
+
 ## Debian Packaging
 
 The `debian/` directory contains the control file for building a Debian package.
