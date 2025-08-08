@@ -16,7 +16,7 @@ sys.path.insert(0, "/etc/archive_group_files")
 from config import ARCHIVE_BASE_DIR, LOG_FILE
 from logger import get_logger
 
-logger = get_logger(LOG_FILE)
+
 
 
 def safe_move(src: str, dst: str):
@@ -39,7 +39,7 @@ def safe_move(src: str, dst: str):
             raise
 
 
-def prepare_archive_dir():
+def prepare_archive_dir(logger):
     """
     Ensures the archive base directory is writable.
     """
@@ -53,7 +53,7 @@ def prepare_archive_dir():
         sys.exit(1)
 
 
-def get_group_members(group_name: str):
+def get_group_members(group_name: str, logger):
     """
     Returns the usernames in the given group.
     """
@@ -67,7 +67,7 @@ def get_group_members(group_name: str):
         sys.exit(1)
 
 
-def process_user(username: str, group_name: str):
+def process_user(username: str, group_name: str, logger):
     """
     Archives the user’s files and returns the count of files moved.
     """
@@ -100,7 +100,7 @@ def process_user(username: str, group_name: str):
     return file_count
 
 
-def archive_group_files(group_name: str):
+def archive_group_files(group_name: str, logger):
     """
     Archives files of all members of a specified group.
     """
@@ -108,20 +108,19 @@ def archive_group_files(group_name: str):
         logger.error("This script must be run as root.")
         sys.exit(1)
 
-    prepare_archive_dir()
-    members = get_group_members(group_name)
+    prepare_archive_dir(logger)
+    members = get_group_members(group_name, logger)
     logger.info(f"Found {len(members)} members in group '{group_name}'.")
 
     total_files = 0
     users_with_files = 0
 
     for user in members:
-        count = process_user(user, group_name)
+        count = process_user(user, group_name, logger)
         if count:
             total_files += count
             users_with_files += 1
 
-    print(f"Archived {total_files} files for {users_with_files} users in group '{group_name}'")
     logger.info(f"Archived {total_files} files for {users_with_files} users in group '{group_name}'")
 
 
@@ -130,4 +129,8 @@ if __name__ == "__main__":
     parser.add_argument("group", help="The name of the group to archive files for.")
     args = parser.parse_args()
 
-    archive_group_files(args.group)
+    # Setup logger with run ID
+    RUN_ID = uuid.uuid4().hex[:6]
+    logger = get_logger(LOG_FILE, run_id=RUN_ID)
+
+    archive_group_files(args.group, logger=logger)
