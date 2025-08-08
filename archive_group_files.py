@@ -10,13 +10,28 @@ import errno
 import argparse
 from datetime import datetime
 from pathlib import Path
+import fcntl
 
 sys.path.insert(0, "/etc/archive_group_files")
 
 from config import ARCHIVE_BASE_DIR, LOG_FILE
 from logger import get_logger
 
+LOCK_FILE_PATH = "/var/lock/archive_group_files.lock"
 
+
+def acquire_lock_or_exit(logger):
+    """
+    Acquire an exclusive lock on a file.
+    If another process holds the lock, exit immediately.
+    """
+    try:
+        lock_file = open(LOCK_FILE_PATH, "w")
+        fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return lock_file
+    except BlockingIOError:
+        logger.error("Another instance of this script is already running.")
+        sys.exit(1)
 
 
 def safe_move(src: str, dst: str):
@@ -133,4 +148,10 @@ if __name__ == "__main__":
     RUN_ID = uuid.uuid4().hex[:6]
     logger = get_logger(LOG_FILE, run_id=RUN_ID)
 
-    archive_group_files(args.group, logger=logger)
+    lock_handle = acquire_lock_or_exit(logger)
+
+    try:
+        archive_group_files(args.group, logger=logger)
+    finally:
+        fcntl.flock(lock_handle, fcntl.LOCK_UN)
+        lock_handle.close()

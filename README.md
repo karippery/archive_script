@@ -103,6 +103,10 @@ Example log entry:
 2025-08-07 23:54:08,785 INFO: [run_id=15ac0a] Archived 2 files for 2 users in group 'developers'
 ```
 
+## Parallel Execution Safety
+If there is a chance that the script might be executed concurrently (for example, by cron or in a distributed system), you should add a simple file lock to avoid race conditions.
+This can be done with fcntl
+
 ## Debian Packaging
 
 The `debian/` directory contains the control file for building a Debian package.
